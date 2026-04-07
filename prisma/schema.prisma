@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  color    String    @default("#3b82f6")
+  holidays Holiday[]
+}
+
+model Holiday {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  startDate  String
+  endDate    String
+  type       String   @default("holiday")
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
