@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - holidays-data:/app/data
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "file:/app/data/holidays.db"
+
+volumes:
+  holidays-data:
