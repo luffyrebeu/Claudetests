@@ -63,6 +63,9 @@ Retry up to 4 times with exponential backoff (2s, 4s, 8s, 16s) on network failur
 - Be concise. Lead with the answer or action, not the reasoning.
 - Use `file_path:line_number` references when pointing to code locations.
 - Do not use emojis unless the user explicitly requests them.
+- Write in plain, clear language.
+- Ask clarifying questions before making assumptions.
+- When unsure, say so.
 
 ---
 
