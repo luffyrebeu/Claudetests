@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
+import frLocale from '@fullcalendar/core/locales/fr'
 
 interface Holiday {
   id: number
@@ -88,6 +89,7 @@ export default function TeamCalendar() {
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         events={events}
+        locale={frLocale}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
