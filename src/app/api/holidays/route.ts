@@ -5,14 +5,18 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const employeeId = searchParams.get('employeeId')
   const month = searchParams.get('month') // YYYY-MM
+  const from  = searchParams.get('from')  // YYYY-MM-DD (sprint range)
+  const to    = searchParams.get('to')    // YYYY-MM-DD (sprint range)
 
   let where: Record<string, unknown> = {}
   if (employeeId) where.employeeId = Number(employeeId)
-  if (month) {
+  if (from && to) {
+    // Absences overlapping with a date range (used by sprint view)
+    where = { ...where, startDate: { lte: to }, endDate: { gte: from } }
+  } else if (month) {
     const [y, m] = month.split('-').map(Number)
     const firstDay = `${month}-01`
     const lastDay = `${month}-${new Date(y, m, 0).getDate().toString().padStart(2, '0')}`
-    // Absences that overlap with the month
     where = { ...where, startDate: { lte: lastDay }, endDate: { gte: firstDay } }
   }
 

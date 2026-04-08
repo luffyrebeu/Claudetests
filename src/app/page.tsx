@@ -5,7 +5,9 @@ import dynamic from 'next/dynamic'
 import MyHolidays from '@/components/MyHolidays'
 import NameSelector from '@/components/NameSelector'
 import ManageTeam from '@/components/ManageTeam'
+import ManageSprints from '@/components/ManageSprints'
 import CapacityView from '@/components/CapacityView'
+import SprintView from '@/components/SprintView'
 
 // FullCalendar uses browser APIs — disable SSR
 const TeamCalendar = dynamic(() => import('@/components/TeamCalendar'), {
@@ -17,12 +19,13 @@ const TeamCalendar = dynamic(() => import('@/components/TeamCalendar'), {
   ),
 })
 
-type Tab = 'calendar' | 'my-holidays' | 'capacity'
+type Tab = 'calendar' | 'my-holidays' | 'capacity' | 'sprints'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   const [currentEmployeeId, setCurrentEmployeeId] = useState<number | null>(null)
   const [showManageTeam, setShowManageTeam] = useState(false)
+  const [showManageSprints, setShowManageSprints] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
@@ -57,6 +60,12 @@ export default function Home() {
             >
               Manage team
             </button>
+            <button
+              onClick={() => setShowManageSprints(true)}
+              className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2"
+            >
+              Manage sprints
+            </button>
           </div>
         </div>
       </header>
@@ -69,6 +78,7 @@ export default function Home() {
               ['calendar', 'Team Calendar'],
               ['my-holidays', 'My Holidays'],
               ['capacity', 'Capacité'],
+              ['sprints', 'Sprints'],
             ] as [Tab, string][]).map(([tab, label]) => (
               <button
                 key={tab}
@@ -92,6 +102,8 @@ export default function Home() {
 
         {activeTab === 'capacity' && <CapacityView key={refreshKey} />}
 
+        {activeTab === 'sprints' && <SprintView key={refreshKey} />}
+
         {activeTab === 'my-holidays' &&
           (currentEmployeeId ? (
             <MyHolidays
@@ -109,6 +121,15 @@ export default function Home() {
         <ManageTeam
           onClose={() => {
             setShowManageTeam(false)
+            refresh()
+          }}
+        />
+      )}
+
+      {showManageSprints && (
+        <ManageSprints
+          onClose={() => {
+            setShowManageSprints(false)
             refresh()
           }}
         />

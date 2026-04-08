@@ -22,6 +22,14 @@ model PublicHoliday {
   name String
 }
 
+model Sprint {
+  id        Int      @id @default(autoincrement())
+  name      String
+  startDate String   // YYYY-MM-DD
+  endDate   String   // YYYY-MM-DD
+  createdAt DateTime @default(now())
+}
+
 model Holiday {
   id         Int      @id @default(autoincrement())
   employeeId Int
