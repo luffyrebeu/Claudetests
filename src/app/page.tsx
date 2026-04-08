@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import MyHolidays from '@/components/MyHolidays'
 import NameSelector from '@/components/NameSelector'
 import ManageTeam from '@/components/ManageTeam'
+import CapacityView from '@/components/CapacityView'
 
 // FullCalendar uses browser APIs — disable SSR
 const TeamCalendar = dynamic(() => import('@/components/TeamCalendar'), {
@@ -16,7 +17,7 @@ const TeamCalendar = dynamic(() => import('@/components/TeamCalendar'), {
   ),
 })
 
-type Tab = 'calendar' | 'my-holidays'
+type Tab = 'calendar' | 'my-holidays' | 'capacity'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
@@ -64,7 +65,11 @@ export default function Home() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex gap-6">
-            {(['calendar', 'my-holidays'] as Tab[]).map(tab => (
+            {([
+              ['calendar', 'Team Calendar'],
+              ['my-holidays', 'My Holidays'],
+              ['capacity', 'Capacité'],
+            ] as [Tab, string][]).map(([tab, label]) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -74,7 +79,7 @@ export default function Home() {
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {tab === 'calendar' ? 'Team Calendar' : 'My Holidays'}
+                {label}
               </button>
             ))}
           </nav>
@@ -84,6 +89,8 @@ export default function Home() {
       {/* Content */}
       <main className="max-w-7xl mx-auto px-6 py-6">
         {activeTab === 'calendar' && <TeamCalendar key={refreshKey} />}
+
+        {activeTab === 'capacity' && <CapacityView key={refreshKey} />}
 
         {activeTab === 'my-holidays' &&
           (currentEmployeeId ? (

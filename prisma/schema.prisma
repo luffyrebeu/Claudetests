@@ -9,10 +9,17 @@ datasource db {
 }
 
 model Employee {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  color    String    @default("#3b82f6")
-  holidays Holiday[]
+  id                 Int       @id @default(autoincrement())
+  name               String    @unique
+  color              String    @default("#3b82f6")
+  workingDaysPerWeek Float     @default(5)
+  holidays           Holiday[]
+}
+
+model PublicHoliday {
+  id   Int    @id @default(autoincrement())
+  date String @unique // YYYY-MM-DD
+  name String
 }
 
 model Holiday {
