@@ -19,11 +19,12 @@ export default function NameSelector({ currentEmployeeId, onSelect }: Props) {
 
   useEffect(() => {
     fetch('/api/employees')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : [])
       .then(data => {
-        setEmployees(data)
+        if (Array.isArray(data)) setEmployees(data)
         setLoading(false)
       })
+      .catch(() => setLoading(false))
   }, [])
 
   const current = employees.find(e => e.id === currentEmployeeId)

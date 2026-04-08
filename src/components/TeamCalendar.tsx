@@ -28,8 +28,9 @@ export default function TeamCalendar() {
 
   useEffect(() => {
     fetch('/api/holidays')
-      .then(r => r.json())
-      .then(setHolidays)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => Array.isArray(data) && setHolidays(data))
+      .catch(() => {})
   }, [])
 
   const events = holidays.map(h => ({
