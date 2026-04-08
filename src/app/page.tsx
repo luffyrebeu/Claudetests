@@ -8,6 +8,7 @@ import ManageTeam from '@/components/ManageTeam'
 import ManageSprints from '@/components/ManageSprints'
 import CapacityView from '@/components/CapacityView'
 import SprintView from '@/components/SprintView'
+import CurrentSprintBanner from '@/components/CurrentSprintBanner'
 
 // FullCalendar uses browser APIs — disable SSR
 const TeamCalendar = dynamic(() => import('@/components/TeamCalendar'), {
@@ -95,6 +96,8 @@ export default function Home() {
           </nav>
         </div>
       </div>
+
+      <CurrentSprintBanner refreshTrigger={refreshKey} />
 
       {/* Content */}
       <main className="max-w-7xl mx-auto px-6 py-6">
