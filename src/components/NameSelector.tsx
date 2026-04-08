@@ -11,13 +11,15 @@ interface Employee {
 interface Props {
   currentEmployeeId: number | null
   onSelect: (id: number) => void
+  refreshTrigger?: number
 }
 
-export default function NameSelector({ currentEmployeeId, onSelect }: Props) {
+export default function NameSelector({ currentEmployeeId, onSelect, refreshTrigger }: Props) {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    setLoading(true)
     fetch('/api/employees')
       .then(r => r.ok ? r.json() : [])
       .then(data => {
@@ -25,7 +27,7 @@ export default function NameSelector({ currentEmployeeId, onSelect }: Props) {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [refreshTrigger])
 
   const current = employees.find(e => e.id === currentEmployeeId)
 

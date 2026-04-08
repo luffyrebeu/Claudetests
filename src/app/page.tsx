@@ -22,7 +22,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
   const [currentEmployeeId, setCurrentEmployeeId] = useState<number | null>(null)
   const [showManageTeam, setShowManageTeam] = useState(false)
-  const [calendarKey, setCalendarKey] = useState(0)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const stored = localStorage.getItem('employeeId')
@@ -34,8 +34,8 @@ export default function Home() {
     localStorage.setItem('employeeId', String(id))
   }
 
-  function refreshCalendar() {
-    setCalendarKey(k => k + 1)
+  function refresh() {
+    setRefreshKey(k => k + 1)
   }
 
   return (
@@ -48,6 +48,7 @@ export default function Home() {
             <NameSelector
               currentEmployeeId={currentEmployeeId}
               onSelect={handleSelectEmployee}
+              refreshTrigger={refreshKey}
             />
             <button
               onClick={() => setShowManageTeam(true)}
@@ -82,13 +83,13 @@ export default function Home() {
 
       {/* Content */}
       <main className="max-w-7xl mx-auto px-6 py-6">
-        {activeTab === 'calendar' && <TeamCalendar key={calendarKey} />}
+        {activeTab === 'calendar' && <TeamCalendar key={refreshKey} />}
 
         {activeTab === 'my-holidays' &&
           (currentEmployeeId ? (
             <MyHolidays
               employeeId={currentEmployeeId}
-              onUpdate={refreshCalendar}
+              onUpdate={refresh}
             />
           ) : (
             <div className="text-center py-16 text-gray-500">
@@ -101,7 +102,7 @@ export default function Home() {
         <ManageTeam
           onClose={() => {
             setShowManageTeam(false)
-            refreshCalendar()
+            refresh()
           }}
         />
       )}
