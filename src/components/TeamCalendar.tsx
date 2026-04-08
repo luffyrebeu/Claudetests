@@ -21,9 +21,9 @@ interface Sprint {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  holiday: 'Annual Leave',
-  sick: 'Sick Leave',
-  other: 'Other',
+  holiday: 'Congés annuels',
+  sick: 'Arrêt maladie',
+  other: 'Autre',
 }
 
 export default function TeamCalendar() {
@@ -40,17 +40,6 @@ export default function TeamCalendar() {
     }).catch(() => {})
   }, [])
 
-  const holidayEvents = holidays.map(h => ({
-    id: `h-${h.id}`,
-    title: `${h.employee.name} — ${TYPE_LABELS[h.type] ?? h.type}`,
-    start: h.startDate,
-    end: addOneDay(h.endDate),
-    backgroundColor: h.employee.color,
-    borderColor: h.employee.color,
-    textColor: '#fff',
-    extendedProps: { kind: 'holiday', note: h.note },
-  }))
-
   const today = new Date().toISOString().split('T')[0]
 
   const sprintEvents = sprints.flatMap(s => {
@@ -63,21 +52,33 @@ export default function TeamCalendar() {
         end: addOneDay(s.endDate),
         display: 'background',
         backgroundColor: isCurrent ? '#dbeafe' : '#f1f5f9',
-        extendedProps: { kind: 'sprint-bg' },
+        extendedProps: { kind: 'sprint-bg', _sort: -1 },
       },
-      // Label event at sprint start
+      // Label spanning the full sprint period
       {
         id: `sprint-label-${s.id}`,
         title: s.name,
         start: s.startDate,
+        end: addOneDay(s.endDate),
         allDay: true,
-        backgroundColor: isCurrent ? '#1d4ed8' : '#64748b',
-        borderColor: isCurrent ? '#1d4ed8' : '#64748b',
-        textColor: '#fff',
-        extendedProps: { kind: 'sprint-label', isCurrent },
+        backgroundColor: isCurrent ? '#bfdbfe' : '#e2e8f0',
+        borderColor:     isCurrent ? '#93c5fd' : '#cbd5e1',
+        textColor:       isCurrent ? '#1e40af' : '#475569',
+        extendedProps: { kind: 'sprint-label', isCurrent, _sort: 0 },
       },
     ]
   })
+
+  const holidayEvents = holidays.map(h => ({
+    id: `h-${h.id}`,
+    title: `${h.employee.name} — ${TYPE_LABELS[h.type] ?? h.type}`,
+    start: h.startDate,
+    end: addOneDay(h.endDate),
+    backgroundColor: h.employee.color,
+    borderColor: h.employee.color,
+    textColor: '#fff',
+    extendedProps: { kind: 'holiday', note: h.note, _sort: 1 },
+  }))
 
   const events = [...sprintEvents, ...holidayEvents]
 
@@ -92,6 +93,7 @@ export default function TeamCalendar() {
           center: 'title',
           right: '',
         }}
+        eventOrder="_sort,start,-duration,allDay,title"
         height="auto"
         eventContent={info => {
           const { kind, note, isCurrent } = info.event.extendedProps
@@ -99,15 +101,14 @@ export default function TeamCalendar() {
           if (kind === 'sprint-label') {
             return (
               <div
-                className="px-1.5 py-0.5 text-xs font-semibold truncate tracking-wide"
+                className={`px-1.5 py-0.5 text-xs truncate ${isCurrent ? 'font-semibold' : 'font-medium'}`}
                 title={info.event.title}
               >
-                {isCurrent ? '▶ ' : ''}{info.event.title}
+                {info.event.title}
               </div>
             )
           }
 
-          // Holiday event
           return (
             <div
               className="px-1 py-0.5 text-xs truncate"

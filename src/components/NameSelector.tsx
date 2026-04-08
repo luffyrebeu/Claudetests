@@ -31,17 +31,17 @@ export default function NameSelector({ currentEmployeeId, onSelect, refreshTrigg
 
   const current = employees.find(e => e.id === currentEmployeeId)
 
-  if (loading) return <span className="text-sm text-gray-400">Loading…</span>
+  if (loading) return <span className="text-sm text-gray-400">Chargement…</span>
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500">You are:</span>
+      <span className="text-sm text-gray-500">Vous êtes :</span>
       <select
         value={currentEmployeeId ?? ''}
         onChange={e => e.target.value && onSelect(Number(e.target.value))}
         className="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        <option value="">Select your name…</option>
+        <option value="">Sélectionnez votre nom…</option>
         {employees.map(e => (
           <option key={e.id} value={e.id}>
             {e.name}

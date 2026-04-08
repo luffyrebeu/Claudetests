@@ -17,9 +17,9 @@ interface Props {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  holiday: 'Annual Leave',
-  sick: 'Sick Leave',
-  other: 'Other',
+  holiday: 'Congés annuels',
+  sick: 'Arrêt maladie',
+  other: 'Autre',
 }
 
 function typeClass(type: string): string {
@@ -57,7 +57,7 @@ export default function MyHolidays({ employeeId, onUpdate }: Props) {
   }, [loadHolidays])
 
   async function deleteHoliday(id: number) {
-    if (!confirm('Delete this holiday?')) return
+    if (!confirm('Supprimer cette absence ?')) return
     await fetch(`/api/holidays/${id}`, { method: 'DELETE' })
     loadHolidays()
     onUpdate()
@@ -70,18 +70,18 @@ export default function MyHolidays({ employeeId, onUpdate }: Props) {
     onUpdate()
   }
 
-  if (loading) return <div className="py-8 text-center text-gray-400">Loading…</div>
+  if (loading) return <div className="py-8 text-center text-gray-400">Chargement…</div>
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium text-gray-900">My Holidays</h2>
+        <h2 className="text-lg font-medium text-gray-900">Mes absences</h2>
         {!showForm && !editing && (
           <button
             onClick={() => setShowForm(true)}
             className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700"
           >
-            + Add holiday
+            + Ajouter une absence
           </button>
         )}
       </div>
@@ -101,14 +101,14 @@ export default function MyHolidays({ employeeId, onUpdate }: Props) {
       )}
 
       {holidays.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">No holidays yet.</div>
+        <div className="text-center py-16 text-gray-400">Aucune absence.</div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Start</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">End</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Début</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Fin</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Type</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Note</th>
                 <th className="px-4 py-3" />
@@ -132,13 +132,13 @@ export default function MyHolidays({ employeeId, onUpdate }: Props) {
                       onClick={() => setEditing(h)}
                       className="text-blue-600 hover:underline mr-3"
                     >
-                      Edit
+                      Modifier
                     </button>
                     <button
                       onClick={() => deleteHoliday(h.id)}
                       className="text-red-500 hover:underline"
                     >
-                      Delete
+                      Supprimer
                     </button>
                   </td>
                 </tr>

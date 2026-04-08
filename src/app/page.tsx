@@ -15,7 +15,7 @@ const TeamCalendar = dynamic(() => import('@/components/TeamCalendar'), {
   ssr: false,
   loading: () => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center text-gray-400">
-      Loading calendar…
+      Chargement du calendrier…
     </div>
   ),
 })
@@ -48,7 +48,7 @@ export default function Home() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-900">Team Holidays</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Congés & Absences</h1>
           <div className="flex items-center gap-4">
             <NameSelector
               currentEmployeeId={currentEmployeeId}
@@ -59,13 +59,13 @@ export default function Home() {
               onClick={() => setShowManageTeam(true)}
               className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2"
             >
-              Manage team
+              Gérer l'équipe
             </button>
             <button
               onClick={() => setShowManageSprints(true)}
               className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2"
             >
-              Manage sprints
+              Gérer les sprints
             </button>
           </div>
         </div>
@@ -76,8 +76,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex gap-6">
             {([
-              ['calendar', 'Team Calendar'],
-              ['my-holidays', 'My Holidays'],
+              ['calendar', 'Calendrier'],
+              ['my-holidays', 'Mes absences'],
               ['capacity', 'Capacité'],
               ['sprints', 'Sprints'],
             ] as [Tab, string][]).map(([tab, label]) => (
@@ -115,7 +115,7 @@ export default function Home() {
             />
           ) : (
             <div className="text-center py-16 text-gray-500">
-              Select your name in the header to manage your holidays.
+              Sélectionnez votre nom dans l'en-tête pour gérer vos absences.
             </div>
           ))}
       </main>

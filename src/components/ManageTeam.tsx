@@ -61,7 +61,7 @@ export default function ManageTeam({ onClose }: Props) {
       setNewName('')
     } else {
       const data = await res.json()
-      setEmployeeError(data.error ?? 'Could not add employee.')
+      setEmployeeError(data.error ?? "Impossible d'ajouter ce membre.")
     }
   }
 
@@ -104,7 +104,7 @@ export default function ManageTeam({ onClose }: Props) {
       setNewHolidayName('')
     } else {
       const data = await res.json()
-      setHolidayError(data.error ?? 'Could not add holiday.')
+      setHolidayError(data.error ?? "Impossible d'ajouter ce jour férié.")
     }
   }
 
@@ -117,14 +117,14 @@ export default function ManageTeam({ onClose }: Props) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-base font-semibold text-gray-900">Manage Team</h2>
+          <h2 className="text-base font-semibold text-gray-900">Gérer l'équipe</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">
             &times;
           </button>
         </div>
 
         {/* ── Team members ── */}
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Team members</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Membres de l'équipe</h3>
         <ul className="mb-3 divide-y divide-gray-100 max-h-52 overflow-y-auto border border-gray-100 rounded-lg">
           {employees.map(e => (
             <li key={e.id} className="flex items-center gap-3 px-3 py-2">
@@ -157,7 +157,7 @@ export default function ManageTeam({ onClose }: Props) {
             type="text"
             value={newName}
             onChange={e => setNewName(e.target.value)}
-            placeholder="Full name"
+            placeholder="Nom complet"
             className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
