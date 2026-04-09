@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { Fragment, useState, useEffect, useMemo } from 'react'
 import { workingDaysInRange, absenceDaysInRange, fmt } from '@/lib/capacity'
 
 interface Employee {
@@ -8,6 +8,7 @@ interface Employee {
   name: string
   color: string
   workingDaysPerWeek: number
+  team: string
 }
 
 interface Holiday {
@@ -111,7 +112,7 @@ export default function CapacityView() {
         <div className="py-8 text-center text-gray-400">Chargement…</div>
       ) : employees.length === 0 ? (
         <div className="py-8 text-center text-gray-400">
-          Aucun membre dans l'équipe. Ajoutez des personnes via "Manage team".
+          Aucun membre dans l'équipe. Ajoutez des personnes via &ldquo;Gérer l'équipe&rdquo;.
         </div>
       ) : (
         <CapacityTable rows={rows} totals={totals} />
@@ -120,9 +121,36 @@ export default function CapacityView() {
   )
 }
 
-interface Row { emp: { id: number; name: string; color: string; workingDaysPerWeek: number }; maxCapacity: number; absences: number; available: number }
+interface Row {
+  emp: { id: number; name: string; color: string; workingDaysPerWeek: number; team: string }
+  maxCapacity: number
+  absences: number
+  available: number
+}
+
+const TEAM_BADGE: Record<string, string> = {
+  MOA: 'bg-amber-100 text-amber-700',
+  MOE: 'bg-purple-100 text-purple-700',
+  DS:  'bg-teal-100 text-teal-700',
+}
+
+const GROUPS: { key: string; label: string; headerCls: string; teams: string[] }[] = [
+  { key: 'BD6', label: 'BD6',  headerCls: 'bg-indigo-50 text-indigo-800', teams: ['MOA', 'MOE'] },
+  { key: 'DS',  label: 'DS',   headerCls: 'bg-teal-50 text-teal-800',     teams: ['DS'] },
+]
+
+function groupTotals(rows: Row[]) {
+  return {
+    max: rows.reduce((s, r) => s + r.maxCapacity, 0),
+    absences: rows.reduce((s, r) => s + r.absences, 0),
+    available: rows.reduce((s, r) => s + r.available, 0),
+  }
+}
 
 export function CapacityTable({ rows, totals }: { rows: Row[]; totals: { max: number; absences: number; available: number } }) {
+  const allGroupedTeams = GROUPS.flatMap(g => g.teams)
+  const ungrouped = rows.filter(r => !allGroupedTeams.includes(r.emp.team))
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <table className="w-full text-sm">
@@ -135,7 +163,58 @@ export function CapacityTable({ rows, totals }: { rows: Row[]; totals: { max: nu
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {rows.map(({ emp, maxCapacity, absences, available }) => (
+          {GROUPS.map(group => {
+            const groupRows = rows.filter(r => group.teams.includes(r.emp.team))
+            if (groupRows.length === 0) return null
+            const gt = groupTotals(groupRows)
+            return (
+              <Fragment key={group.key}>
+                {/* Group header */}
+                <tr className={group.headerCls}>
+                  <td colSpan={4} className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider">
+                    {group.label}
+                  </td>
+                </tr>
+                {/* Member rows */}
+                {groupRows.map(({ emp, maxCapacity, absences, available }) => (
+                  <tr key={emp.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: emp.color }} />
+                        <span className="text-gray-800">{emp.name}</span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${TEAM_BADGE[emp.team] ?? 'bg-gray-100 text-gray-600'}`}>
+                          {emp.team}
+                        </span>
+                        <span className="text-xs text-gray-400">({emp.workingDaysPerWeek}j/sem)</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-700">{fmt(maxCapacity)}</td>
+                    <td className="px-4 py-3 text-right text-orange-600">
+                      {absences > 0 ? `-${fmt(absences)}` : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold">
+                      <span className={available < maxCapacity * 0.5 ? 'text-red-600' : 'text-green-700'}>
+                        {fmt(available)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {/* Group subtotal */}
+                <tr className="bg-gray-50 border-t border-gray-200">
+                  <td className="px-4 py-2 pl-8 text-xs font-semibold text-gray-600">
+                    Sous-total {group.label}
+                  </td>
+                  <td className="px-4 py-2 text-right text-xs font-semibold text-gray-700">{fmt(gt.max)}</td>
+                  <td className="px-4 py-2 text-right text-xs font-semibold text-orange-600">
+                    {gt.absences > 0 ? `-${fmt(gt.absences)}` : '—'}
+                  </td>
+                  <td className="px-4 py-2 text-right text-xs font-bold text-gray-900">{fmt(gt.available)}</td>
+                </tr>
+              </Fragment>
+            )
+          })}
+          {/* Ungrouped employees (no team or unknown team) */}
+          {ungrouped.map(({ emp, maxCapacity, absences, available }) => (
             <tr key={emp.id} className="hover:bg-gray-50">
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">

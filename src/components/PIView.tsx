@@ -24,6 +24,7 @@ interface Employee {
   name: string
   color: string
   workingDaysPerWeek: number
+  team: string
 }
 
 interface Holiday {

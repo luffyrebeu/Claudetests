@@ -7,6 +7,7 @@ interface Employee {
   name: string
   color: string
   workingDaysPerWeek: number
+  team: string
 }
 
 interface PublicHoliday {
@@ -19,6 +20,14 @@ interface Props {
   onClose: () => void
 }
 
+const TEAMS = ['MOA', 'MOE', 'DS'] as const
+
+const TEAM_COLORS: Record<string, string> = {
+  MOA: 'bg-amber-100 text-amber-700',
+  MOE: 'bg-purple-100 text-purple-700',
+  DS:  'bg-teal-100 text-teal-700',
+}
+
 function formatDate(str: string): string {
   const [y, m, d] = str.split('-')
   return `${d}/${m}/${y}`
@@ -28,13 +37,13 @@ export default function ManageTeam({ onClose }: Props) {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [publicHolidays, setPublicHolidays] = useState<PublicHoliday[]>([])
   const [newName, setNewName] = useState('')
+  const [newTeam, setNewTeam] = useState<string>('MOA')
   const [newHolidayDate, setNewHolidayDate] = useState('')
   const [newHolidayName, setNewHolidayName] = useState('')
   const [employeeError, setEmployeeError] = useState('')
   const [holidayError, setHolidayError] = useState('')
   const [saving, setSaving] = useState(false)
   const [savingHoliday, setSavingHoliday] = useState(false)
-  // track which employee's daysPerWeek is being edited
   const [editingDays, setEditingDays] = useState<Record<number, string>>({})
 
   useEffect(() => {
@@ -51,7 +60,7 @@ export default function ManageTeam({ onClose }: Props) {
     const res = await fetch('/api/employees', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName.trim() }),
+      body: JSON.stringify({ name: newName.trim(), team: newTeam }),
     })
     setSaving(false)
 
@@ -82,6 +91,15 @@ export default function ManageTeam({ onClose }: Props) {
       delete next[id]
       return next
     })
+  }
+
+  async function updateTeam(id: number, team: string) {
+    await fetch(`/api/employees/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ team }),
+    })
+    setEmployees(prev => prev.map(e => (e.id === id ? { ...e, team } : e)))
   }
 
   async function addPublicHoliday(e: React.FormEvent) {
@@ -123,13 +141,22 @@ export default function ManageTeam({ onClose }: Props) {
           </button>
         </div>
 
-        {/* ── Team members ── */}
+        {/* ── Membres ── */}
         <h3 className="text-sm font-medium text-gray-700 mb-2">Membres de l'équipe</h3>
-        <ul className="mb-3 divide-y divide-gray-100 max-h-52 overflow-y-auto border border-gray-100 rounded-lg">
+        <ul className="mb-3 divide-y divide-gray-100 max-h-56 overflow-y-auto border border-gray-100 rounded-lg">
           {employees.map(e => (
-            <li key={e.id} className="flex items-center gap-3 px-3 py-2">
+            <li key={e.id} className="flex items-center gap-2 px-3 py-2">
               <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
-              <span className="text-sm text-gray-800 flex-1">{e.name}</span>
+              <span className="text-sm text-gray-800 flex-1 truncate">{e.name}</span>
+              <select
+                value={e.team}
+                onChange={ev => updateTeam(e.id, ev.target.value)}
+                className={`text-xs border border-gray-200 rounded px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium shrink-0 ${TEAM_COLORS[e.team] ?? ''}`}
+              >
+                {TEAMS.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
               <div className="flex items-center gap-1 shrink-0">
                 <input
                   type="number"
@@ -148,7 +175,7 @@ export default function ManageTeam({ onClose }: Props) {
             </li>
           ))}
           {employees.length === 0 && (
-            <li className="py-4 text-center text-sm text-gray-400">No team members yet.</li>
+            <li className="py-4 text-center text-sm text-gray-400">Aucun membre pour l'instant.</li>
           )}
         </ul>
 
@@ -160,19 +187,28 @@ export default function ManageTeam({ onClose }: Props) {
             placeholder="Nom complet"
             className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          <select
+            value={newTeam}
+            onChange={e => setNewTeam(e.target.value)}
+            className="border border-gray-300 rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {TEAMS.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
           <button
             type="submit"
             disabled={saving}
             className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 whitespace-nowrap"
           >
-            Add
+            Ajouter
           </button>
         </form>
         {employeeError && <p className="text-sm text-red-600 mb-4">{employeeError}</p>}
 
-        {/* ── Public holidays ── */}
+        {/* ── Jours fériés ── */}
         <div className="border-t border-gray-200 mt-5 pt-5">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Public holidays</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">Jours fériés</h3>
           <ul className="mb-3 divide-y divide-gray-100 max-h-40 overflow-y-auto border border-gray-100 rounded-lg">
             {publicHolidays.map(h => (
               <li key={h.id} className="flex items-center gap-3 px-3 py-2">
@@ -182,12 +218,12 @@ export default function ManageTeam({ onClose }: Props) {
                   onClick={() => deletePublicHoliday(h.id)}
                   className="text-red-400 hover:text-red-600 text-xs shrink-0"
                 >
-                  Remove
+                  Supprimer
                 </button>
               </li>
             ))}
             {publicHolidays.length === 0 && (
-              <li className="py-3 text-center text-sm text-gray-400">No public holidays.</li>
+              <li className="py-3 text-center text-sm text-gray-400">Aucun jour férié.</li>
             )}
           </ul>
 
@@ -202,7 +238,7 @@ export default function ManageTeam({ onClose }: Props) {
               type="text"
               value={newHolidayName}
               onChange={e => setNewHolidayName(e.target.value)}
-              placeholder="Name (e.g. 14 juillet)"
+              placeholder="Ex: 14 juillet"
               className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
@@ -210,7 +246,7 @@ export default function ManageTeam({ onClose }: Props) {
               disabled={savingHoliday}
               className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 whitespace-nowrap"
             >
-              Add
+              Ajouter
             </button>
           </form>
           {holidayError && <p className="text-sm text-red-600">{holidayError}</p>}
