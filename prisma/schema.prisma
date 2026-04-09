@@ -22,12 +22,23 @@ model PublicHoliday {
   name String
 }
 
-model Sprint {
+model ProgramIncrement {
   id        Int      @id @default(autoincrement())
   name      String
   startDate String   // YYYY-MM-DD
   endDate   String   // YYYY-MM-DD
   createdAt DateTime @default(now())
+  sprints   Sprint[]
+}
+
+model Sprint {
+  id        Int               @id @default(autoincrement())
+  name      String
+  startDate String            // YYYY-MM-DD
+  endDate   String            // YYYY-MM-DD
+  piId      Int?
+  pi        ProgramIncrement? @relation(fields: [piId], references: [id])
+  createdAt DateTime          @default(now())
 }
 
 model Holiday {

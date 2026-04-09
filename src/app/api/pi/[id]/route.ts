@@ -7,7 +7,7 @@ export async function PUT(
 ) {
   const { id: idStr } = await params
   const id = Number(idStr)
-  const { name, startDate, endDate, piId } = await request.json()
+  const { name, startDate, endDate } = await request.json()
 
   if (!name?.trim() || !startDate || !endDate) {
     return NextResponse.json({ error: 'name, startDate and endDate are required' }, { status: 400 })
@@ -17,14 +17,19 @@ export async function PUT(
   }
 
   try {
-    const sprint = await prisma.sprint.update({
+    const pi = await prisma.programIncrement.update({
       where: { id },
-      data: { name: name.trim(), startDate, endDate, piId: piId !== undefined ? (piId ?? null) : undefined },
-      include: { pi: { select: { id: true, name: true } } },
+      data: { name: name.trim(), startDate, endDate },
+      include: {
+        sprints: {
+          orderBy: { startDate: 'asc' },
+          select: { id: true, name: true, startDate: true, endDate: true, piId: true },
+        },
+      },
     })
-    return NextResponse.json(sprint)
+    return NextResponse.json(pi)
   } catch {
-    return NextResponse.json({ error: 'Sprint not found' }, { status: 404 })
+    return NextResponse.json({ error: 'PI not found' }, { status: 404 })
   }
 }
 
@@ -36,9 +41,11 @@ export async function DELETE(
   const id = Number(idStr)
 
   try {
-    await prisma.sprint.delete({ where: { id } })
+    // Detach sprints before deleting PI
+    await prisma.sprint.updateMany({ where: { piId: id }, data: { piId: null } })
+    await prisma.programIncrement.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch {
-    return NextResponse.json({ error: 'Sprint not found' }, { status: 404 })
+    return NextResponse.json({ error: 'PI not found' }, { status: 404 })
   }
 }

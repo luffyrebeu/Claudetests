@@ -8,6 +8,7 @@ import ManageTeam from '@/components/ManageTeam'
 import ManageSprints from '@/components/ManageSprints'
 import CapacityView from '@/components/CapacityView'
 import SprintView from '@/components/SprintView'
+import PIView from '@/components/PIView'
 import CurrentSprintBanner from '@/components/CurrentSprintBanner'
 
 // FullCalendar uses browser APIs — disable SSR
@@ -20,7 +21,7 @@ const TeamCalendar = dynamic(() => import('@/components/TeamCalendar'), {
   ),
 })
 
-type Tab = 'calendar' | 'my-holidays' | 'capacity' | 'sprints'
+type Tab = 'calendar' | 'my-holidays' | 'capacity' | 'sprints' | 'pi-planning'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
@@ -80,6 +81,7 @@ export default function Home() {
               ['my-holidays', 'Mes absences'],
               ['capacity', 'Capacité'],
               ['sprints', 'Sprints'],
+              ['pi-planning', 'PI Planning'],
             ] as [Tab, string][]).map(([tab, label]) => (
               <button
                 key={tab}
@@ -106,6 +108,8 @@ export default function Home() {
         {activeTab === 'capacity' && <CapacityView key={refreshKey} />}
 
         {activeTab === 'sprints' && <SprintView key={refreshKey} />}
+
+        {activeTab === 'pi-planning' && <PIView key={refreshKey} />}
 
         {activeTab === 'my-holidays' &&
           (currentEmployeeId ? (
