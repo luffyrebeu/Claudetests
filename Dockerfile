@@ -9,7 +9,17 @@ COPY package*.json ./
 COPY prisma ./prisma/
 RUN npm ci
 
-# ── Stage 2: build ─────────────────────────────────────────────────────────────
+# ── Stage 2: test ──────────────────────────────────────────────────────────────
+# Usage: docker build --target test .
+FROM node:20-alpine AS test
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN npm test
+
+# ── Stage 3: build ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 WORKDIR /app
 
@@ -22,7 +32,7 @@ ENV DATABASE_URL="file:/tmp/build.db"
 
 RUN npx prisma generate && npm run build
 
-# ── Stage 3: runtime ──────────────────────────────────────────────────────────
+# ── Stage 4: runtime ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app

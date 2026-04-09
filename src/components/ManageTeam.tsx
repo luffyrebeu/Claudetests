@@ -44,6 +44,8 @@ export default function ManageTeam({ onClose }: Props) {
   const [holidayError, setHolidayError] = useState('')
   const [saving, setSaving] = useState(false)
   const [savingHoliday, setSavingHoliday] = useState(false)
+  const [seedingYear, setSeedingYear] = useState<number | null>(null)
+  const [seedMessage, setSeedMessage] = useState('')
   const [editingDays, setEditingDays] = useState<Record<number, string>>({})
 
   useEffect(() => {
@@ -131,6 +133,27 @@ export default function ManageTeam({ onClose }: Props) {
     setPublicHolidays(prev => prev.filter(h => h.id !== id))
   }
 
+  async function seedYear(year: number) {
+    setSeedingYear(year)
+    setSeedMessage('')
+    const res = await fetch('/api/public-holidays/seed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ year }),
+    })
+    setSeedingYear(null)
+    if (res.ok) {
+      const data = await res.json()
+      const refreshed = await fetch('/api/public-holidays').then(r => r.json())
+      setPublicHolidays(refreshed)
+      setSeedMessage(
+        data.inserted === 0
+          ? `Les jours fériés ${year} sont déjà présents.`
+          : `${data.inserted} jour${data.inserted > 1 ? 's' : ''} férié${data.inserted > 1 ? 's' : ''} ${year} importé${data.inserted > 1 ? 's' : ''}.`
+      )
+    }
+  }
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
@@ -208,7 +231,22 @@ export default function ManageTeam({ onClose }: Props) {
 
         {/* ── Jours fériés ── */}
         <div className="border-t border-gray-200 mt-5 pt-5">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Jours fériés</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-medium text-gray-700">Jours fériés</h3>
+            <div className="flex gap-1.5">
+              {[new Date().getFullYear(), new Date().getFullYear() + 1].map(year => (
+                <button
+                  key={year}
+                  onClick={() => seedYear(year)}
+                  disabled={seedingYear === year}
+                  className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded disabled:opacity-50"
+                >
+                  {seedingYear === year ? '…' : `Importer ${year}`}
+                </button>
+              ))}
+            </div>
+          </div>
+          {seedMessage && <p className="text-xs text-green-700 mb-2">{seedMessage}</p>}
           <ul className="mb-3 divide-y divide-gray-100 max-h-40 overflow-y-auto border border-gray-100 rounded-lg">
             {publicHolidays.map(h => (
               <li key={h.id} className="flex items-center gap-3 px-3 py-2">

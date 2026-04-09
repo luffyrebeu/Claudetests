@@ -21,6 +21,12 @@ interface Sprint {
   endDate: string
 }
 
+interface PublicHoliday {
+  id: number
+  date: string
+  name: string
+}
+
 const TYPE_LABELS: Record<string, string> = {
   holiday: 'Congés annuels',
   sick: 'Arrêt maladie',
@@ -30,14 +36,17 @@ const TYPE_LABELS: Record<string, string> = {
 export default function TeamCalendar() {
   const [holidays, setHolidays] = useState<Holiday[]>([])
   const [sprints, setSprints] = useState<Sprint[]>([])
+  const [publicHolidays, setPublicHolidays] = useState<PublicHoliday[]>([])
 
   useEffect(() => {
     Promise.all([
       fetch('/api/holidays').then(r => r.ok ? r.json() : []),
       fetch('/api/sprints').then(r => r.ok ? r.json() : []),
-    ]).then(([hols, sps]) => {
+      fetch('/api/public-holidays').then(r => r.ok ? r.json() : []),
+    ]).then(([hols, sps, phs]) => {
       if (Array.isArray(hols)) setHolidays(hols)
       if (Array.isArray(sps)) setSprints(sps)
+      if (Array.isArray(phs)) setPublicHolidays(phs)
     }).catch(() => {})
   }, [])
 
@@ -70,6 +79,28 @@ export default function TeamCalendar() {
     ]
   })
 
+  const publicHolidayEvents = publicHolidays.flatMap(ph => [
+    {
+      id: `ph-bg-${ph.id}`,
+      start: ph.date,
+      end: addOneDay(ph.date),
+      display: 'background',
+      backgroundColor: '#fee2e2',
+      extendedProps: { kind: 'ph-bg', _sort: -2 },
+    },
+    {
+      id: `ph-label-${ph.id}`,
+      title: ph.name,
+      start: ph.date,
+      end: addOneDay(ph.date),
+      allDay: true,
+      backgroundColor: '#fecaca',
+      borderColor: '#fca5a5',
+      textColor: '#991b1b',
+      extendedProps: { kind: 'ph-label', _sort: 0 },
+    },
+  ])
+
   const holidayEvents = holidays.map(h => ({
     id: `h-${h.id}`,
     title: `${h.employee.name} — ${TYPE_LABELS[h.type] ?? h.type}`,
@@ -81,7 +112,7 @@ export default function TeamCalendar() {
     extendedProps: { kind: 'holiday', note: h.note, _sort: 1 },
   }))
 
-  const events = [...sprintEvents, ...holidayEvents]
+  const events = [...sprintEvents, ...publicHolidayEvents, ...holidayEvents]
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -104,6 +135,17 @@ export default function TeamCalendar() {
             return (
               <div
                 className={`px-1.5 py-0.5 text-xs truncate ${isCurrent ? 'font-semibold' : 'font-medium'}`}
+                title={info.event.title}
+              >
+                {info.event.title}
+              </div>
+            )
+          }
+
+          if (kind === 'ph-label') {
+            return (
+              <div
+                className="px-1.5 py-0.5 text-xs font-medium truncate"
                 title={info.event.title}
               >
                 {info.event.title}
