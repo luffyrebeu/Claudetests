@@ -21,7 +21,15 @@ const TeamCalendar = dynamic(() => import('@/components/TeamCalendar'), {
   ),
 })
 
-type Tab = 'calendar' | 'my-holidays' | 'capacity' | 'sprints' | 'pi-planning'
+// Recharts uses ResizeObserver — disable SSR
+const StatsView = dynamic(() => import('@/components/StatsView'), {
+  ssr: false,
+  loading: () => (
+    <div className="py-8 text-center text-gray-400">Chargement des statistiques…</div>
+  ),
+})
+
+type Tab = 'calendar' | 'my-holidays' | 'capacity' | 'sprints' | 'pi-planning' | 'stats'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>('calendar')
@@ -82,6 +90,7 @@ export default function Home() {
               ['capacity', 'Capacité'],
               ['sprints', 'Sprints'],
               ['pi-planning', 'PI Planning'],
+              ['stats', 'Statistiques'],
             ] as [Tab, string][]).map(([tab, label]) => (
               <button
                 key={tab}
@@ -110,6 +119,8 @@ export default function Home() {
         {activeTab === 'sprints' && <SprintView key={refreshKey} />}
 
         {activeTab === 'pi-planning' && <PIView key={refreshKey} />}
+
+        {activeTab === 'stats' && <StatsView key={refreshKey} />}
 
         {activeTab === 'my-holidays' &&
           (currentEmployeeId ? (
