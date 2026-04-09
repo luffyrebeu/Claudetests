@@ -8,6 +8,7 @@ interface Employee {
   color: string
   workingDaysPerWeek: number
   team: string
+  contractType: string
 }
 
 interface PublicHoliday {
@@ -21,6 +22,7 @@ interface Props {
 }
 
 const TEAMS = ['MOA', 'MOE', 'DS'] as const
+const CONTRACT_TYPES = ['interne', 'prestataire'] as const
 
 const TEAM_COLORS: Record<string, string> = {
   MOA: 'bg-amber-100 text-amber-700',
@@ -38,6 +40,7 @@ export default function ManageTeam({ onClose }: Props) {
   const [publicHolidays, setPublicHolidays] = useState<PublicHoliday[]>([])
   const [newName, setNewName] = useState('')
   const [newTeam, setNewTeam] = useState<string>('MOA')
+  const [newContractType, setNewContractType] = useState<string>('interne')
   const [newHolidayDate, setNewHolidayDate] = useState('')
   const [newHolidayName, setNewHolidayName] = useState('')
   const [employeeError, setEmployeeError] = useState('')
@@ -62,7 +65,7 @@ export default function ManageTeam({ onClose }: Props) {
     const res = await fetch('/api/employees', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName.trim(), team: newTeam }),
+      body: JSON.stringify({ name: newName.trim(), team: newTeam, contractType: newContractType }),
     })
     setSaving(false)
 
@@ -70,6 +73,7 @@ export default function ManageTeam({ onClose }: Props) {
       const emp = await res.json()
       setEmployees(prev => [...prev, emp].sort((a, b) => a.name.localeCompare(b.name)))
       setNewName('')
+      setNewContractType('interne')
     } else {
       const data = await res.json()
       setEmployeeError(data.error ?? "Impossible d'ajouter ce membre.")
@@ -102,6 +106,15 @@ export default function ManageTeam({ onClose }: Props) {
       body: JSON.stringify({ team }),
     })
     setEmployees(prev => prev.map(e => (e.id === id ? { ...e, team } : e)))
+  }
+
+  async function updateContractType(id: number, contractType: string) {
+    await fetch(`/api/employees/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contractType }),
+    })
+    setEmployees(prev => prev.map(e => (e.id === id ? { ...e, contractType } : e)))
   }
 
   async function addPublicHoliday(e: React.FormEvent) {
@@ -180,6 +193,15 @@ export default function ManageTeam({ onClose }: Props) {
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
+              <select
+                value={e.contractType}
+                onChange={ev => updateContractType(e.id, ev.target.value)}
+                className="text-xs border border-gray-200 rounded px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0"
+              >
+                {CONTRACT_TYPES.map(c => (
+                  <option key={c} value={c}>{c === 'prestataire' ? 'Prest.' : 'Int.'}</option>
+                ))}
+              </select>
               <div className="flex items-center gap-1 shrink-0">
                 <input
                   type="number"
@@ -217,6 +239,15 @@ export default function ManageTeam({ onClose }: Props) {
           >
             {TEAMS.map(t => (
               <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+          <select
+            value={newContractType}
+            onChange={e => setNewContractType(e.target.value)}
+            className="border border-gray-300 rounded-md px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {CONTRACT_TYPES.map(c => (
+              <option key={c} value={c}>{c === 'prestataire' ? 'Prest.' : 'Int.'}</option>
             ))}
           </select>
           <button

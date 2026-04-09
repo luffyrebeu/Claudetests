@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 const VALID_TEAMS = ['MOA', 'MOE', 'DS']
+const VALID_CONTRACT_TYPES = ['interne', 'prestataire']
 
 export async function PUT(
   request: Request,
@@ -11,7 +12,7 @@ export async function PUT(
   const id = Number(idStr)
   const body = await request.json()
 
-  const data: { workingDaysPerWeek?: number; team?: string } = {}
+  const data: { workingDaysPerWeek?: number; team?: string; contractType?: string } = {}
 
   if (body.workingDaysPerWeek !== undefined) {
     const days = Number(body.workingDaysPerWeek)
@@ -32,6 +33,16 @@ export async function PUT(
       )
     }
     data.team = body.team
+  }
+
+  if (body.contractType !== undefined) {
+    if (!VALID_CONTRACT_TYPES.includes(body.contractType)) {
+      return NextResponse.json(
+        { error: 'contractType must be interne or prestataire' },
+        { status: 400 }
+      )
+    }
+    data.contractType = body.contractType
   }
 
   if (Object.keys(data).length === 0) {

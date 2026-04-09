@@ -9,6 +9,7 @@ interface Employee {
   color: string
   workingDaysPerWeek: number
   team: string
+  contractType: string
 }
 
 interface Holiday {
@@ -122,7 +123,7 @@ export default function CapacityView() {
 }
 
 interface Row {
-  emp: { id: number; name: string; color: string; workingDaysPerWeek: number; team: string }
+  emp: { id: number; name: string; color: string; workingDaysPerWeek: number; team: string; contractType: string }
   maxCapacity: number
   absences: number
   available: number
@@ -185,6 +186,11 @@ export function CapacityTable({ rows, totals }: { rows: Row[]; totals: { max: nu
                         <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${TEAM_BADGE[emp.team] ?? 'bg-gray-100 text-gray-600'}`}>
                           {emp.team}
                         </span>
+                        {emp.contractType === 'prestataire' && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700">
+                            Prest.
+                          </span>
+                        )}
                         <span className="text-xs text-gray-400">({emp.workingDaysPerWeek}j/sem)</span>
                       </div>
                     </td>
@@ -199,6 +205,26 @@ export function CapacityTable({ rows, totals }: { rows: Row[]; totals: { max: nu
                     </td>
                   </tr>
                 ))}
+                {/* Contract type subtotals (only when both types are present) */}
+                {(['interne', 'prestataire'] as const).map(ct => {
+                  const ctRows = groupRows.filter(r => r.emp.contractType === ct)
+                  if (ctRows.length === 0) return null
+                  const hasOtherType = groupRows.some(r => r.emp.contractType !== ct)
+                  if (!hasOtherType) return null
+                  const ct_ = groupTotals(ctRows)
+                  return (
+                    <tr key={ct} className="bg-gray-50/60 border-t border-gray-100">
+                      <td className="px-4 py-1.5 pl-8 text-xs text-gray-500">
+                        Dont {ct === 'interne' ? 'internes' : 'prestataires'}
+                      </td>
+                      <td className="px-4 py-1.5 text-right text-xs text-gray-500">{fmt(ct_.max)}</td>
+                      <td className="px-4 py-1.5 text-right text-xs text-orange-400">
+                        {ct_.absences > 0 ? `-${fmt(ct_.absences)}` : '—'}
+                      </td>
+                      <td className="px-4 py-1.5 text-right text-xs text-gray-600">{fmt(ct_.available)}</td>
+                    </tr>
+                  )
+                })}
                 {/* Group subtotal */}
                 <tr className="bg-gray-50 border-t border-gray-200">
                   <td className="px-4 py-2 pl-8 text-xs font-semibold text-gray-600">
@@ -220,6 +246,11 @@ export function CapacityTable({ rows, totals }: { rows: Row[]; totals: { max: nu
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: emp.color }} />
                   <span className="text-gray-800">{emp.name}</span>
+                  {emp.contractType === 'prestataire' && (
+                    <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700">
+                      Prest.
+                    </span>
+                  )}
                   <span className="text-xs text-gray-400">({emp.workingDaysPerWeek}j/sem)</span>
                 </div>
               </td>
