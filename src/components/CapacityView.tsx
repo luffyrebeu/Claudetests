@@ -9,6 +9,7 @@ interface Employee {
   color: string
   workingDaysPerWeek: number
   team: string
+  contractType: string
 }
 
 interface Holiday {
@@ -122,7 +123,7 @@ export default function CapacityView() {
 }
 
 interface Row {
-  emp: { id: number; name: string; color: string; workingDaysPerWeek: number; team: string }
+  emp: { id: number; name: string; color: string; workingDaysPerWeek: number; team: string; contractType: string }
   maxCapacity: number
   absences: number
   available: number
@@ -185,6 +186,11 @@ export function CapacityTable({ rows, totals }: { rows: Row[]; totals: { max: nu
                         <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${TEAM_BADGE[emp.team] ?? 'bg-gray-100 text-gray-600'}`}>
                           {emp.team}
                         </span>
+                        {emp.contractType === 'prestataire' && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700">
+                            Prest.
+                          </span>
+                        )}
                         <span className="text-xs text-gray-400">({emp.workingDaysPerWeek}j/sem)</span>
                       </div>
                     </td>
@@ -220,6 +226,11 @@ export function CapacityTable({ rows, totals }: { rows: Row[]; totals: { max: nu
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: emp.color }} />
                   <span className="text-gray-800">{emp.name}</span>
+                  {emp.contractType === 'prestataire' && (
+                    <span className="text-xs px-1.5 py-0.5 rounded-full font-medium bg-orange-100 text-orange-700">
+                      Prest.
+                    </span>
+                  )}
                   <span className="text-xs text-gray-400">({emp.workingDaysPerWeek}j/sem)</span>
                 </div>
               </td>

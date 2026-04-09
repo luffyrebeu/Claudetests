@@ -10,13 +10,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { name, team } = await request.json()
+  const { name, team, contractType } = await request.json()
 
   if (!name?.trim()) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
   }
   if (team && !['MOA', 'MOE', 'DS'].includes(team)) {
     return NextResponse.json({ error: 'team must be MOA, MOE or DS' }, { status: 400 })
+  }
+  if (contractType && !['interne', 'prestataire'].includes(contractType)) {
+    return NextResponse.json({ error: 'contractType must be interne or prestataire' }, { status: 400 })
   }
 
   const existing = await prisma.employee.findMany({ select: { color: true } })
@@ -25,7 +28,7 @@ export async function POST(request: Request) {
 
   try {
     const employee = await prisma.employee.create({
-      data: { name: name.trim(), color, team: team ?? 'MOA' },
+      data: { name: name.trim(), color, team: team ?? 'MOA', contractType: contractType ?? 'interne' },
     })
     return NextResponse.json(employee, { status: 201 })
   } catch {
