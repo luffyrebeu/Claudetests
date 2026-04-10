@@ -99,6 +99,12 @@ export default function ManageTeam({ onClose }: Props) {
     })
   }
 
+  async function deleteEmployee(id: number, name: string) {
+    if (!confirm(`Supprimer ${name} ? Ses absences seront également supprimées.`)) return
+    await fetch(`/api/employees/${id}`, { method: 'DELETE' })
+    setEmployees(prev => prev.filter(e => e.id !== id))
+  }
+
   async function updateTeam(id: number, team: string) {
     await fetch(`/api/employees/${id}`, {
       method: 'PUT',
@@ -217,6 +223,12 @@ export default function ManageTeam({ onClose }: Props) {
                 />
                 <span className="text-xs text-gray-400">j/sem</span>
               </div>
+              <button
+                onClick={() => deleteEmployee(e.id, e.name)}
+                className="text-red-400 hover:text-red-600 text-xs shrink-0 ml-1"
+              >
+                Supprimer
+              </button>
             </li>
           ))}
           {employees.length === 0 && (
