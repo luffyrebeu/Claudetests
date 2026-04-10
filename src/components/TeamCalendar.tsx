@@ -225,9 +225,19 @@ export default function TeamCalendar({ onUpdate }: Props) {
     {confirmHoliday && (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg shadow-xl p-6 w-96">
-          <h3 className="font-semibold text-gray-900 mb-4">
-            Absence — {confirmHoliday.employee.name}
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">
+              Absence — {confirmHoliday.employee.name}
+            </h3>
+            <button
+              onClick={() => setConfirmHoliday(null)}
+              disabled={deleting || saving}
+              className="text-gray-400 hover:text-gray-600 disabled:opacity-50 text-lg leading-none"
+              aria-label="Fermer"
+            >
+              ✕
+            </button>
+          </div>
           <div className="space-y-3 text-sm text-gray-700 mb-6">
             <p><span className="font-medium">Type :</span> {TYPE_LABELS[confirmHoliday.type] ?? confirmHoliday.type}</p>
             <div>
