@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+  FullCalendar dayGrid : fond d'aujourd'hui sans interférence z-index.
+  - position:relative sur la <td> change le containing block des harnesses
+    absolus → les barres s'arrêtaient un jour trop tôt.
+  - box-shadow:inset remplace background-color sans créer de containing block
+    ni de stacking context. Il est peint sous le contenu, donc les barres
+    d'absences passent toujours dessus.
+*/
+.fc .fc-day-today {
+  background-color: transparent !important;
+  box-shadow: inset 0 0 0 9999px rgba(219, 234, 254, 0.45);
+}
