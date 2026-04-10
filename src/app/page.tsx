@@ -112,7 +112,7 @@ export default function Home() {
 
       {/* Content */}
       <main className="max-w-7xl mx-auto px-6 py-6">
-        {activeTab === 'calendar' && <TeamCalendar key={refreshKey} />}
+        {activeTab === 'calendar' && <TeamCalendar key={refreshKey} onUpdate={refresh} />}
 
         {activeTab === 'capacity' && <CapacityView key={refreshKey} />}
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import frLocale from '@fullcalendar/core/locales/fr'
+import type { EventClickArg } from '@fullcalendar/core'
 
 interface Holiday {
   id: number
@@ -33,10 +34,16 @@ const TYPE_LABELS: Record<string, string> = {
   other: 'Autre',
 }
 
-export default function TeamCalendar() {
+interface Props {
+  onUpdate?: () => void
+}
+
+export default function TeamCalendar({ onUpdate }: Props) {
   const [holidays, setHolidays] = useState<Holiday[]>([])
   const [sprints, setSprints] = useState<Sprint[]>([])
   const [publicHolidays, setPublicHolidays] = useState<PublicHoliday[]>([])
+  const [confirmHoliday, setConfirmHoliday] = useState<Holiday | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -109,12 +116,33 @@ export default function TeamCalendar() {
     backgroundColor: h.employee.color,
     borderColor: h.employee.color,
     textColor: '#fff',
-    extendedProps: { kind: 'holiday', note: h.note, _sort: 1 },
+    extendedProps: { kind: 'holiday', holidayId: h.id, note: h.note, _sort: 1 },
   }))
 
   const events = [...sprintEvents, ...publicHolidayEvents, ...holidayEvents]
 
+  function handleEventClick(info: EventClickArg) {
+    if (info.event.extendedProps.kind !== 'holiday') return
+    const hId = info.event.extendedProps.holidayId as number
+    const found = holidays.find(h => h.id === hId)
+    if (found) setConfirmHoliday(found)
+  }
+
+  async function handleDelete() {
+    if (!confirmHoliday) return
+    setDeleting(true)
+    try {
+      await fetch(`/api/holidays/${confirmHoliday.id}`, { method: 'DELETE' })
+      setHolidays(prev => prev.filter(h => h.id !== confirmHoliday.id))
+      setConfirmHoliday(null)
+      onUpdate?.()
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
+    <>
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <FullCalendar
         plugins={[dayGridPlugin]}
@@ -126,6 +154,7 @@ export default function TeamCalendar() {
           center: 'title',
           right: '',
         }}
+        eventClick={handleEventClick}
         eventOrder="_sort,start,-duration,allDay,title"
         height="auto"
         eventContent={info => {
@@ -164,7 +193,46 @@ export default function TeamCalendar() {
         }}
       />
     </div>
+
+    {confirmHoliday && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl p-6 w-80">
+          <h3 className="font-semibold text-gray-900 mb-4">Supprimer cette absence ?</h3>
+          <div className="space-y-1 text-sm text-gray-700 mb-6">
+            <p><span className="font-medium">Employé :</span> {confirmHoliday.employee.name}</p>
+            <p><span className="font-medium">Type :</span> {TYPE_LABELS[confirmHoliday.type] ?? confirmHoliday.type}</p>
+            <p><span className="font-medium">Du :</span> {fmtDate(confirmHoliday.startDate)}</p>
+            <p><span className="font-medium">Au :</span> {fmtDate(confirmHoliday.endDate)}</p>
+            {confirmHoliday.note && (
+              <p><span className="font-medium">Note :</span> {confirmHoliday.note}</p>
+            )}
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setConfirmHoliday(null)}
+              disabled={deleting}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 disabled:opacity-50"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleting ? 'Suppression…' : 'Supprimer'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
+}
+
+function fmtDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-')
+  return `${d}/${m}/${y}`
 }
 
 function addOneDay(dateStr: string): string {
