@@ -298,7 +298,7 @@ export default function TeamCalendar({ onUpdate }: Props) {
 }
 
 function addOneDay(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00')
-  d.setDate(d.getDate() + 1)
-  return d.toISOString().split('T')[0]
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const utc = new Date(Date.UTC(y, m - 1, d + 1))
+  return utc.toISOString().split('T')[0]
 }
