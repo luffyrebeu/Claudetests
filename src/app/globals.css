@@ -2,10 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* FullCalendar : empêche la surbrillance "aujourd'hui" de passer devant les barres d'absences */
-.fc .fc-daygrid-day-bg {
-  z-index: 1;
+/*
+  FullCalendar dayGrid : le fond d'aujourd'hui masque les barres d'absences
+  car background-color sur la <td> peut passer au-dessus des harnesses issus
+  de cellules précédentes.
+  Fix : supprimer le fond natif et le réimplémenter via ::before sans z-index
+  explicite — les éléments positionnés avec z-index positif (event harnesses)
+  se retrouvent toujours au-dessus d'un pseudo-élément z-index:auto.
+*/
+.fc .fc-day-today {
+  position: relative;
+  background-color: transparent !important;
 }
-.fc .fc-daygrid-event-harness {
-  z-index: 4;
+.fc .fc-day-today::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: rgba(219, 234, 254, 0.45);
+  pointer-events: none;
 }
