@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* FullCalendar : empêche la surbrillance "aujourd'hui" de passer devant les barres d'absences */
+.fc .fc-daygrid-day-bg {
+  z-index: 1;
+}
+.fc .fc-daygrid-event-harness {
+  position: relative;
+  z-index: 4;
+}
