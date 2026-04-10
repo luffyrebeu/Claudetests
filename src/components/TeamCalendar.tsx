@@ -155,7 +155,7 @@ export default function TeamCalendar({ onUpdate }: Props) {
       const res = await fetch(`/api/holidays/${confirmHoliday.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ startDate: editStart, endDate: editEnd }),
+        body: JSON.stringify({ startDate: editStart, endDate: editEnd, type: confirmHoliday.type, note: confirmHoliday.note }),
       })
       if (res.ok) {
         setHolidays(prev => prev.map(h =>
